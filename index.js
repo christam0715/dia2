@@ -1,4 +1,4 @@
-
+////////////////////////////////////////
 //const messageWebhookController = require('./controllers/messageWebhook');
 const facebookVerificationController = require('./verification/facebookVerification');
 const wechatVerificationController = require('./verification/wechatVerification');
@@ -15,8 +15,8 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.listen(3000, () => console.log('Webhook server is listening, port 3000'));
-
+//app.listen(3000, () => console.log('Webhook server is listening, port 3000'));
+app.listen(process.env.PORT||8080);
 app.get('/facebook', facebookVerificationController);
 app.get('/wechat', wechatVerificationController);
 
