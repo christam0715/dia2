@@ -1,7 +1,7 @@
 
 const PureCloudChat = require('../purecloud-chat.js');
 const { DialogflowConnector } = require('../helpers/dialogflowConnector');
-//const sqlConnector = require('./sqlServerConnector');
+const firestoreConnector = require('../helpers/firestoreConnector');
 const { WechatClient } = require('messaging-api-wechat');
 const client = WechatClient.connect({
     appId: 'wxe4bdc563059c0b6a',
@@ -11,21 +11,6 @@ const client = WechatClient.connect({
 const sendTextMessage = (senderId, text) => {
     client.sendText(senderId, text);
 };
-
-/*const sendImage = (senderId, mediaId) => {
-    client.sendImage(senderId, mediaId);
-
-};
-
-const sendAudio = (senderId, mediaId) => {
-    client.sendVoice(senderId, mediaId);
-}
-
-const sendVideo = (senderId, mediaId) => {
-    console.log("V3");
-    client.sendVideo(senderId, mediaId);
-}*/
-
 
 
 const sendAttachment = (senderId, type, mediaId) => {
@@ -46,14 +31,7 @@ const sendAttachment = (senderId, type, mediaId) => {
             console.log("attachment null");
     }
 
-
-
-
-
 }
-
-//const fs = require('fs');
-//const buffer = fs.readFileSync('./welcome.jpg');
 
 class WechatConversation {
     constructor(senderId) {
@@ -83,21 +61,20 @@ class WechatConversation {
     receiveRequest(data, res) {
         this.history.push('Customer:\t' +data.Content);
         if (this.purecloud == false) {
-         //   sqlConnector.insertDialog(this.senderId, 'Client', 'Bot', data.Content, new Date());
+            firestoreConnector.insertDialog("Wechat", this.senderId, 'Client', 'Bot', data.Content, new Date());
         }
         else {
-           // sqlConnector.insertDialog(this.senderId, 'Client', 'PureCloud', data.Content, new Date());
+            firestoreConnector.insertDialog("Wechat", this.senderId, 'Client', 'PureCloud', data.Content, new Date());
         }
 
         if (this.welcome == false) {
+            this.welcome = true;
             this.sendResponseToClient('你好！ 歡迎使用機器人\nHello! Welcome to use the bot', 'Bot')
             this.history.push('Bot:\t' + '你好！ 歡迎使用機器人\nHello! Welcome to use the bot');
-            this.welcome = true;
             this.dialogflow.sendResponse('show language choices');
         }
         else if (this.language == null) {
             this.dialogflow.checkLanguage(data.Content);
-
         }
 
         else if (this.purecloud == false) {
@@ -114,9 +91,8 @@ class WechatConversation {
     }
 
     sendResponseToClient(text, source) {
-     //   sqlConnector.insertDialog(this.senderId, source, 'Client', text, new Date());
+        firestoreConnector.insertDialog("Wechat", this.senderId, source, 'Client', text, new Date());
         sendTextMessage(this.senderId, text)
-
     }
 
     sendAttachmentToClinet(type, url, mediaId, source) {

@@ -1,4 +1,3 @@
-////////////////////////////////////////
 //const messageWebhookController = require('./controllers/messageWebhook');
 const facebookVerificationController = require('./verification/facebookVerification');
 const wechatVerificationController = require('./verification/wechatVerification');

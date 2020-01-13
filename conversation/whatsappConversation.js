@@ -1,6 +1,6 @@
 const PureCloudChat = require('../purecloud-chat.js');
 const { DialogflowConnector } = require('../helpers/dialogflowConnector');
-//const sqlConnector = require('./sqlServerConnector');
+const firestoreConnector = require('../helpers/firestoreConnector');
 
 const accountSid = 'ACb8748902c4d2c18d945bdce2b49cabe7';
 const authToken = 'd5a75aa3faa2c4be08808985da11c8f8';
@@ -55,19 +55,17 @@ class WhatsappConversation {
     receiveRequest(req, res) {
         this.history.push('Customer:\t' + req.body.Body);
         if (this.purecloud == false) {
-          //  sqlConnector.insertDialog(this.senderId, 'Client', 'Bot', req.body.Body, new Date());
+            firestoreConnector.insertDialog("WhatsApp", this.senderId, 'Client', 'Bot', req.body.Body, new Date());
         }
         else {
-          //  sqlConnector.insertDialog(this.senderId, 'Client', 'PureCloud', req.body.Body, new Date());
+            firestoreConnector.insertDialog("WhatsApp", this.senderId, 'Client', 'PureCloud', req.body.Body, new Date());
         }
 
         if (this.welcome == false) {
+            this.welcome = true;
             this.sendResponseToClient('你好！ 歡迎使用機器人\nHello! Welcome to use the bot', 'Bot')
             this.history.push('Bot:\t' + '你好！ 歡迎使用機器人\nHello! Welcome to use the bot');
-        //    this.showLanguageChoice();
-            this.welcome = true;
             this.dialogflow.sendResponse('show language choices');
-
         }
         else if (this.language == null) {
             this.dialogflow.checkLanguage(req.body.Body);
@@ -86,7 +84,7 @@ class WhatsappConversation {
     }
 
     sendResponseToClient(text, source) {
-      //  sqlConnector.insertDialog(this.senderId, source, 'Client', text, new Date());
+        firestoreConnector.insertDialog("WhatsApp", this.senderId, source, 'Client', text, new Date());
         sendTextMessage(this.senderId, text)
     }
 

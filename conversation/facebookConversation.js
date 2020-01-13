@@ -1,6 +1,6 @@
 const PureCloudChat = require('../purecloud-chat.js');
 const { DialogflowConnector } = require('../helpers/dialogflowConnector');
-//const sqlConnector = require('./sqlServerConnector');
+const firestoreConnector = require('../helpers/firestoreConnector');
 const request = require('request');
 
 const FACEBOOK_ACCESS_TOKEN = 'EAAe9imZCZB8OwBALiNi7Xn3e6uurk4ujsPAKBharoZBiFsVZCk75n5vI5eszBFcWxeCDEknFTTZA3tQZCyZBAlyXfohdMMXDWfqIFCIeutx2v82aUNBj3IwYnz49aBlabmolxAfwTCywoL415KoMR3HCkXN56yZCsAd4t4EHC4BD2QZDZD';
@@ -88,11 +88,10 @@ class FbConversation {
     }
 
     receiveRequest(req, res) {
-        console.log('req.body', req.body.entry[0].messaging[0]);
+        //console.log('req.body', req.body.entry[0].messaging[0]);
 
         req.body.entry.forEach(entry => {
-            console.log('req.body.entr', req.body.entry[0].messaging[0]);
-
+            //console.log('req.body.entr', req.body.entry[0].messaging[0]);
 
             entry.messaging.forEach(event => {
                 var request = null;
@@ -106,33 +105,32 @@ class FbConversation {
                 if (request != null) {
                     this.history.push('Customer:\t' + request);
                     if (this.purecloud == false) {
-                       // sqlConnector.insertDialog(this.senderId, 'Client', 'Bot', request, new Date());
+                        firestoreConnector.insertDialog("Facebook", this.senderId, 'Client', 'Bot', request, new Date());
                     }
                     else {
-                       // sqlConnector.insertDialog(this.senderId, 'Client', 'PureCloud', request, new Date());
+                        firestoreConnector.insertDialog("Facebook", this.senderId, 'Client', 'PureCloud', request, new Date());
                     }
 
                     if (this.welcome == false) {
+                        this.welcome = true;
                         this.sendResponseToClient('你好！ 歡迎使用機器人\nHello! Welcome to use the bot', 'Bot')
                         this.history.push('Bot:\t' + '你好！ 歡迎使用機器人\nHello! Welcome to use the bot');
-                        this.welcome = true;
                         this.dialogflow.sendResponse('show language choices');
                     }
                     else if (this.language == null) {
                         this.dialogflow.checkLanguage(request);
-
                     }
                     else if (this.purecloud == false) {
-                     //   if (request) {
-                          //  sqlConnector.insertDialog(this.senderId, 'Client', 'Bot', request, new Date());
-                            this.history.push('Customer:\t' + request);
-                            this.dialogflow.sendResponse(request, this.language);
-                       // }
+                        //   if (request) {
+                        //firestoreConnector.insertDialog("Facebook", this.senderId, 'Client', 'Bot', request, new Date());
+                        this.history.push('Customer:\t' + request);
+                        this.dialogflow.sendResponse(request, this.language);
+                        // }
                     }
                     else {
                         //if (request) {
-                         //   sqlConnector.insertDialog(this.senderId, 'Client', 'PureCloud', request, new Date());
-                            PureCloudChat.sendMessageToPureCloud(request, this.storageObject);
+                        //firestoreConnector.insertDialog("Facebook", this.senderId, 'Client', 'PureCloud', request, new Date());
+                        PureCloudChat.sendMessageToPureCloud(request, this.storageObject);
                         //}
                     }
                 }
@@ -142,7 +140,7 @@ class FbConversation {
     }
 
     sendResponseToClient(text, source) {
-      //  sqlConnector.insertDialog(this.senderId, source, 'Client', text, new Date());
+        firestoreConnector.insertDialog("Facebook", this.senderId, source, 'Client', text, new Date());
         sendTextMessage(this.senderId, text)
     }
 
